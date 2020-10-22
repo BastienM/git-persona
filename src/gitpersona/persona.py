@@ -8,7 +8,7 @@ def main(argv=None):
         description='Specify or list repository-local persona(s).')
     parser.add_argument('--name', '-n', help='persona name')
     options = parser.parse_args(argv)
-    personas = list_personas()
+    personas = get_personas()
     if options.name:
         persona = personas.get(options.name)
         if not persona:
@@ -28,30 +28,36 @@ def main(argv=None):
             email=cmd('git config user.email')))
 
 
-CONFIG_PERSONA = re.compile('^persona\\.(.*?) ([^<]*) <(.*?)>$')
+def get_personas():
+    results = {}
+    entries = re.compile(r"^persona\W(?P<profile>[a-zA-Z0-9]+)\W(?P<param>[a-zA-Z0-9]+)\W(?P<value>.*)$", re.MULTILINE)
 
+    config = cmd(f"git config --global --get-regex '^persona.([a-zA-Z0-9]+).*$'")
+    for match in [e.groupdict() for e in entries.finditer(config)]:
+        param = {match['param']: match['value']}
+        if match['profile'] in results.keys():
+            results.update({
+                match['profile']: {**results[match['profile']], **param}
+            })
+        else:
+            results.update({match['profile']: param})
 
-def list_personas():
-    result = {}
-    config = cmd('git config --global --get-regex ^persona\\.')
-    for line in config.splitlines():
-        match = CONFIG_PERSONA.search(line)
-        if not match:
-            continue
-        result[match.group(1)] = {
-            'name': match.group(2), 'email': match.group(3)}
-    return result
+    return results
 
 
 def set_persona(persona):
-    cmd('git config --local user.name "{}"'.format(persona['name']))
-    cmd('git config --local user.email "{}"'.format(persona['email']))
+    for p, v in persona.items():
+        cmd(f'git config --local user.{p} "{v}"')
 
 
 def cmd(cmd):
     process = subprocess.Popen(
         cmd, shell=True,
         stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-    stdout, stderr = process.communicate()
+    stdout, _ = process.communicate()
     # XXX This simply assumes utf8 -- is that feasible?
     return stdout.strip().decode('utf8')
+
+
+if __name__ == '__main__':
+    main()

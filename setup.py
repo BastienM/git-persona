@@ -1,27 +1,23 @@
-"""Provides an easy way to configure git username on a per repository basis.
 """
+Provides an easy way to configure git username on a per repository basis.
+"""
+
 from setuptools import setup, find_packages
 import glob
 
 
 setup(
-    name='ws.gitpersona',
-    version='1.1.dev0',
+    name='git-persona',
+    version='1.0',
 
     install_requires=[
         'setuptools',
     ],
 
-    entry_points={
-        'console_scripts': [
-            'git-persona = ws.gitpersona.persona:main'
-        ],
-    },
-
-    author='Wolfgang Schnerring <wosc@wosc.de>',
-    author_email='wosc@wosc.de',
+    author='Bastien MENNESSON <bastien.mennesson@pm.me>',
+    author_email='bastien.mennesson@pm.me',
     license='BSD',
-    url='https://github.com/wosc/git-persona/',
+    url='https://github.com/bastienm/git-persona/',
 
     description=__doc__.strip(),
     long_description='\n\n'.join(open(name).read() for name in (
@@ -29,7 +25,6 @@ setup(
         'CHANGES.txt',
     )),
 
-    namespace_packages=['ws'],
     packages=find_packages('src'),
     package_dir={'': 'src'},
     include_package_data=True,
